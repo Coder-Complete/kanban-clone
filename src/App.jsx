@@ -20,7 +20,7 @@ function App() {
           </p>
           <button
             onClick={() => {
-              fetch("http://localhost:5030/boards")
+              fetch(import.meta.env.VITE_BACKEND_URL + "/boards")
                 .then((response) => response.json())
                 .then((data) => {
                   setBoards(data);
