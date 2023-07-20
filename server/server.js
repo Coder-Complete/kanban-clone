@@ -1,28 +1,28 @@
 /* eslint-disable no-undef*/
 import http from "http";
-import pg from "pg";
+// import pg from "pg";
 import "dotenv/config";
 
-const client = new pg.Client({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDB,
-  password: process.env.PGPWD,
-  port: process.env.PGPORT,
-});
-await client.connect();
+// const client = new pg.Client({
+//   user: process.env.PGUSER,
+//   host: process.env.PGHOST,
+//   database: process.env.PGDB,
+//   password: process.env.PGPWD,
+//   port: process.env.PGPORT,
+// });
+// await client.connect();
 
-async function queryDb(query) {
-  try {
-    const res = await client.query(query);
-    return res.rows;
-  } catch (err) {
-    console.error(err);
-    return [];
-  } finally {
-    await client.end();
-  }
-}
+// async function queryDb(query) {
+//   try {
+//     const res = await client.query(query);
+//     return res.rows;
+//   } catch (err) {
+//     console.error(err);
+//     return [];
+//   } finally {
+//     await client.end();
+//   }
+// }
 
 const server = http.createServer(async (req, res) => {
   console.log(req.url);
