@@ -14,10 +14,10 @@ const client = new pg.Client(
       }
     : "postgres://admin:sOdTEpXhj9zKtcFc5EYdrWAB9fc2KsWz@dpg-cisl9l95rnujejq1v7gg-a/kanban_clone"
 );
-await client.connect();
 
 async function queryDb(query) {
   try {
+    await client.connect();
     const res = await client.query(query);
     return res.rows;
   } catch (err) {
