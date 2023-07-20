@@ -1,0 +1,17 @@
+0. x - set up react app w/ vite
+1. x - set up vanilla node.js server
+2. x - connect backend to frontend
+3. x - nodemon
+4. x - set up db and connect to backend (postgres - can do more, open source. mysql - simpler. companies prefer postgres i'd imagine)
+5. x - frontend is connected to backend is connected to db (locally)
+6. deploy and all is connected
+7. build backend for front page w/o express nor sequelize (actually write sql queries)
+8. rewrite w/ express (benefits - easy org, plugin libraries (middleware), cors middleware makes life easier)
+9. postman
+10. define & implement db schemas (sequelize, mvc)
+11. build the routes
+12. build the frontend
+13. mention firebase / supabase and other options (pro - easy to get going, con - can get expensive once locked in and app scales)
+14. build auth
+15. add logging
+16. add swagger
