@@ -4,14 +4,18 @@
 3. x - nodemon
 4. x - set up db and connect to backend (postgres - can do more, open source. mysql - simpler. companies prefer postgres i'd imagine)
 5. x - frontend is connected to backend is connected to db (locally)
-6. deploy and all is connected
-7. build backend for front page w/o express nor sequelize (actually write sql queries)
-8. rewrite w/ express (benefits - easy org, plugin libraries (middleware), cors middleware makes life easier)
-9. postman
-10. define & implement db schemas (sequelize, mvc)
-11. build the routes
-12. build the frontend
-13. mention firebase / supabase and other options (pro - easy to get going, con - can get expensive once locked in and app scales)
-14. build auth
-15. add logging
-16. add swagger
+6. x - deploy and all is connected
+7. x - identify entities for db, explain sql, then show data needed per screen in figma
+8. play around w/ db then make script to populate it (first cmd is drop table)
+9. build backend for front page w/o express nor sequelize (actually write sql queries)
+10. rewrite w/ express & sequelize
+  - express benefits - easy org, plugin libraries (middleware), cors middleware makes life easier
+  - sequelize benefits - define relationships like oop, don't have to use sql except for more complicated queries
+11. postman
+12. define & implement db schemas (sequelize, mvc)
+13. build the routes
+14. build the frontend
+15. mention firebase / supabase and other options (pro - easy to get going, con - can get expensive once locked in and app scales)
+16. build auth
+17. add logging
+18. add swagger

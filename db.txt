@@ -1,0 +1,18 @@
+board
+- id (PK)
+- name
+- created_date
+
+column
+- id (PK)
+- name
+- position
+- board_id (FK)
+
+tasks
+- id (PK)
+- title
+- description
+- created_date
+- column_id (FK)
+- parent_id (FK)
