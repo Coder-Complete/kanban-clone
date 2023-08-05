@@ -1,6 +1,6 @@
 /* eslint-disable no-undef, no-unsafe-finally */
 import pg from "pg";
-// import "dotenv/config"; <-- uncomment if want to use local postgres
+import "dotenv/config"; // uncomment if want to use local postgres
 
 const dbConfig = process.env.PGUSER
   ? {
