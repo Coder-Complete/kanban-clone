@@ -7,15 +7,17 @@ async function queryDb(query) {
   let client;
   try {
     client = new pg.Client(
-      process.env.PGUSER
-        ? {
-            user: process.env.PGUSER,
-            host: process.env.PGHOST,
-            database: process.env.PGDB,
-            password: process.env.PGPWD,
-            port: process.env.PGPORT,
-          }
-        : "postgres://admin:sOdTEpXhj9zKtcFc5EYdrWAB9fc2KsWz@dpg-cisl9l95rnujejq1v7gg-a/kanban_clone"
+      // process.env.PGUSER
+      //   ? {
+      //       user: process.env.PGUSER,
+      //       host: process.env.PGHOST,
+      //       database: process.env.PGDB,
+      //       password: process.env.PGPWD,
+      //       port: process.env.PGPORT,
+      //     }
+      //   :
+
+      "postgres://admin:sOdTEpXhj9zKtcFc5EYdrWAB9fc2KsWz@dpg-cisl9l95rnujejq1v7gg-a/kanban_clone"
     );
     await client.connect();
     const res = await client.query(query);
