@@ -19,9 +19,9 @@ const dbConfig = process.env.PGUSER
 const sampleBoardData = [{ name: "Project 1" }, { name: "Project 2" }];
 
 const sampleColumnData = [
-  { name: "To Do", position: 0, board_id: 0 },
-  { name: "In Progress", position: 1, board_id: 0 },
-  { name: "Done", position: 2, board_id: 0 },
+  { name: "To Do", position: 0, board_id: 1 },
+  { name: "In Progress", position: 1, board_id: 1 },
+  { name: "Done", position: 2, board_id: 1 },
 ];
 
 const sampleTaskData = [
@@ -30,14 +30,14 @@ const sampleTaskData = [
     title: "Research new technology",
     description:
       "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cum voluptas fugiat similique odit, iste accusamus alias eveniet perspiciatis? Consequuntur delectus laboriosam aut accusantium id error quibusdam ratione, quasi voluptatibus excepturi.",
-    column_id: 0,
+    column_id: 1,
     parent_id: null,
   },
   {
     id: 2,
     title: "Bigger task",
     description: "lorem ipsum dolor sit amet consectetur adipis",
-    column_id: 1,
+    column_id: 2,
     parent_id: null,
   },
   {
@@ -45,7 +45,7 @@ const sampleTaskData = [
     title: "Subtask",
     description:
       "Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus nihil voluptatem quia velit laborum, provident suscipit id eveniet sint a recusandae magni praesentium beatae aliquid! Qui optio nulla eos commodi.",
-    column_id: 1,
+    column_id: 2,
     parent_id: 2,
   },
   {
@@ -53,7 +53,7 @@ const sampleTaskData = [
     title: "Build an easy feature",
     description:
       "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed blanditiis minima totam praesentium animi, iure veritatis cum velit sit eaque, labore cumque dolore, aliquid accusantium eos! Earum soluta odit consequatur.",
-    column_id: 2,
+    column_id: 3,
     parent_id: null,
   },
 ];
@@ -65,9 +65,9 @@ async function populateDatabase() {
     await pool.connect();
 
     // delete the existing table
-    await pool.query(`DROP TABLE IF EXISTS boards`);
-    await pool.query(`DROP TABLE IF EXISTS columns`);
     await pool.query(`DROP TABLE IF EXISTS tasks`);
+    await pool.query(`DROP TABLE IF EXISTS columns`);
+    await pool.query(`DROP TABLE IF EXISTS boards`);
 
     // // Create a table (if not exists) to store the data
     await pool.query(
@@ -83,7 +83,7 @@ async function populateDatabase() {
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         position INT NOT NULL,
-        FOREIGN KEY (board_id) REFERENCES boards(id)
+        board_id INTEGER REFERENCES boards(id)
       )
     `);
     await pool.query(`
@@ -92,8 +92,8 @@ async function populateDatabase() {
         title VARCHAR(100) NOT NULL,
         description TEXT,
         created_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        FOREIGN KEY (column_id) REFERENCES columns(id),
-        FOREIGN KEY (parent_id) REFERENCES tasks(id)
+        column_id INTEGER REFERENCES columns(id),
+        parent_id INTEGER REFERENCES tasks(id)
       )
     `);
 
@@ -130,11 +130,12 @@ async function populateDatabase() {
     }
 
     console.log("Sample data inserted successfully!");
+    return;
   } catch (error) {
     console.error("Error occurred:", error);
+    return;
   } finally {
     pool.end();
-    return;
   }
 }
 
