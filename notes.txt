@@ -6,7 +6,7 @@
 5. x - frontend is connected to backend is connected to db (locally)
 6. x - deploy and all is connected
 7. x - identify entities for db, explain sql, then show data needed per screen in figma
-8. play around w/ db then make script to populate it (first cmd is drop table)
+8. x - play around w/ db then make script to populate it (first cmd is drop table)
 9. build backend for front page w/o express nor sequelize (actually write sql queries)
   - first, vid explaining the queries in the design
   - then explain get, post (new entry), put (replace existing entry), delete, patch (modify PART OF existing entry)
