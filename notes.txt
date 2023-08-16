@@ -15,19 +15,20 @@
   - then explain get, post (new entry), put (replace existing entry), delete, patch (modify PART OF existing entry)
   - comment the routes we need
   - make the routes
+    - hyphen as word delimiter is preferred
 10. postman - test the routes (can test w/ backend url as well, but benefits below). benefits:
   - collections (don't need to rewrite queries, organization)
   - visualize data
   - share and collab
-
 11. rewrite w/ express & sequelize
   - define & implement db schemas (sequelize, mvc)
   - express benefits - easy org, plugin libraries (middleware), cors middleware makes life easier
   - sequelize benefits - define relationships like oop, don't have to use sql except for more complicated queries
-12. build the frontend (start w/ react router)
-13. mention firebase / supabase and other options
+12. mention indexes for db
+13. build the frontend (start w/ react router)
+14. mention firebase / supabase and other options
   - pro - easy to get going
   - con - can get expensive once locked in and app scales
-14. build auth
-15. add logging
-16. add swagger
+15. build auth
+16. add logging
+17. add swagger

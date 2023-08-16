@@ -29,6 +29,33 @@ async function queryDb(query) {
 }
 
 const server = http.createServer(async (req, res) => {
+  /*
+    home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
+      - read - GET
+    entire-board/{board_id} (all info for board including columns and tasks)
+      - read - GET
+    boards (gets all the boards)
+      - read - GET
+    boards/{board_id} (individual board)
+      - create - POST
+      - read - GET 
+      - update - POST
+      - delete - POST
+    boards/{board_id}/columns (gets all columns for board)
+      - read - GET 
+    columns/{column_id} (individual column)
+      - create - POST
+      - read - GET
+      - update - POST
+      - delete - POST
+    columns/{column_id}/tasks (gets all tasks for column)
+      - read - GET
+    tasks/{task_id} (individual task)
+      - create - POST
+      - read - GET (need to get subtasks as well)
+      - update - POST
+      - delete - POST
+  */
   const origin = req.headers.origin;
   const allowedOrigins = [
     "http://localhost:5173",
