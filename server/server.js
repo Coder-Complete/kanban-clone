@@ -39,7 +39,6 @@ const app = express();
 app.get("/", (req, res) => {
   res.send("You've hit the API!");
 });
-
 //     home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
 //       - read - GET
 //     entire-board/{board_id} (all info for board including columns and tasks)
@@ -47,7 +46,7 @@ app.get("/", (req, res) => {
 //     boards (gets all the boards)
 //       - read - GET
 app.get("/boards", async (req, res) => {
-  let data = await queryDb("select * from boards;");
+  const data = await queryDb("select * from boards;");
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
   res.send(JSON.stringify(data));
@@ -57,6 +56,13 @@ app.get("/boards", async (req, res) => {
 //       - read - GET
 //       - update - POST
 //       - delete - POST
+app.get("/boards/:boardID", async (req, res) => {
+  const boardID = req.params.boardID;
+  const data = await queryDb(`select * from boards where id = ${boardID};`);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 //     boards/{board_id}/columns (gets all columns for board)
 //       - read - GET
 //     columns/{column_id} (individual column)
