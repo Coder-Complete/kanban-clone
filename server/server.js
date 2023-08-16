@@ -54,8 +54,6 @@ app.get("/boards", async (req, res) => {
 //     boards/{board_id} (individual board)
 //       - create - POST
 //       - read - GET
-//       - update - POST
-//       - delete - POST
 app.get("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
   const data = await queryDb(`select * from boards where id = ${boardID};`);
@@ -63,24 +61,48 @@ app.get("/boards/:boardID", async (req, res) => {
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
+//       - update - POST
+//       - delete - POST
 //     boards/{board_id}/columns (gets all columns for board)
 //       - read - GET
+app.get("/boards/:boardID/columns", async (req, res) => {
+  const boardID = req.params.boardID;
+  const data = await queryDb(
+    `select * from columns where board_id = ${boardID};`
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 //     columns/{column_id} (individual column)
 //       - create - POST
 //       - read - GET
+app.get("/columns/:columnID", async (req, res) => {
+  const columnID = req.params.columnID;
+  const data = await queryDb(`select * from columns where id = ${columnID};`);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 //       - update - POST
 //       - delete - POST
 //     columns/{column_id}/tasks (gets all tasks for column)
 //       - read - GET
+app.get("/columns/:columnID/tasks", async (req, res) => {
+  const columnID = req.params.columnID;
+  const data = await queryDb(
+    `select * from tasks where column_id = ${columnID};`
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 //     tasks/{task_id} (individual task)
 //       - create - POST
 //       - read - GET (need to get subtasks as well)
 //       - update - POST
 //       - delete - POST
 //
-app.get("/", (req, res) => {
-  res.send("You've hit the API!");
-});
 
 app.listen(port, () => {
   console.log(
