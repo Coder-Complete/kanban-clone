@@ -51,8 +51,14 @@ app.get("/boards", async (req, res) => {
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
-//     boards/{board_id} (individual board)
 //       - create - POST
+app.post("/boards", async (req, res) => {
+  const data = await queryDb("insert into boards (name) values ('');");
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
+//     boards/{board_id} (individual board)
 //       - read - GET
 app.get("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
