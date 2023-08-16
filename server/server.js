@@ -32,7 +32,7 @@ async function queryDb(query) {
 const port = 5030;
 const app = express();
 
-// app.use(express.json()); <-- let's wait til we see when we need this one (i've only done gets so far with no arguments in the request)
+app.use(express.json());
 
 // do i need cors? <-- wait to see if i need it. by default app.us(cors()) will allow all origins, but can configure to specify origins
 
@@ -53,10 +53,14 @@ app.get("/boards", async (req, res) => {
 });
 //       - create - POST
 app.post("/boards", async (req, res) => {
-  const data = await queryDb("insert into boards (name) values ('');");
+  const dataFromRequest = req.body;
+  const boardName = dataFromRequest.boardName;
+  const result = await queryDb(
+    `insert into boards (name) values ('${boardName}') returning *;` // it's common to return the object that just got created
+  );
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.send(JSON.stringify(result));
 });
 //     boards/{board_id} (individual board)
 //       - read - GET
