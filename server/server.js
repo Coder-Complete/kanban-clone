@@ -64,6 +64,18 @@ const server = http.createServer(async (req, res) => {
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
+
+  /* 
+    DEMONSTRATING WHY VANILLA NODE.JS IS UGLY
+
+    const segments = req.url.split("/");
+    for the /entire-board/{board_id} route, board_id will be segments[2]
+    and the if case for this is if (segments[1] === 'entire-board' && segments.length === 2)
+    this is quite ugly
+
+    elaborate on all the different if conditions we'd need
+  */
+
   if (req.url === "/") {
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 200;

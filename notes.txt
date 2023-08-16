@@ -16,6 +16,7 @@
   - comment the routes we need
   - make the routes
     - hyphen as word delimiter is preferred
+    - show that vanilla node.js will get ugly, esp with dynamic routes
 10. postman - test the routes (can test w/ backend url as well, but benefits below). benefits:
   - collections (don't need to rewrite queries, organization)
   - visualize data
