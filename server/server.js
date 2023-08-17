@@ -1,6 +1,8 @@
 /* 
   next:
-    - do update routes for everything
+    - do put routes for everything
+    - do patch routes for everything
+    - add error handling
     - entire board route
     - home-screen route
 */
@@ -54,10 +56,9 @@ app.get("/", (req, res) => {
 // boards
 // GET - gets all the boards
 app.get("/boards", async (req, res) => {
-  const data = await queryDb("select * from boards;");
+  const queryResult = await queryDb("select * from boards;");
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 // POST - create a board
 app.post("/boards", async (req, res) => {
@@ -68,40 +69,62 @@ app.post("/boards", async (req, res) => {
     [boardName]
   );
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(queryResult));
+  res.status(200).json(queryResult);
 });
 
 // boards/{board_id}
 // GET - get an individual board
 app.get("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
-  const data = await queryDb("select * from boards where id = $1;", [boardID]);
+  const queryResult = await queryDb("select * from boards where id = $1;", [
+    boardID,
+  ]);
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 // PUT
+app.put("/boards/:boardID", async (req, res) => {
+  const boardID = req.params.boardID;
+  const updatedData = req.body;
+  try {
+    // Perform the SQL update operation
+    const updateQuery = `
+          UPDATE boards
+          SET name = $1
+          WHERE id = $2
+          RETURNING *
+      `;
+    const updateValues = [updatedData.name, boardID];
+    const queryResult = await pool.query(updateQuery, updateValues);
+    res.status(200).json(queryResult);
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the resource." });
+  }
+});
 // PATCH
 // DELETE
 app.delete("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
-  const data = await queryDb("delete from boards where id = $1;", [boardID]);
+  const queryResult = await queryDb("delete from boards where id = $1;", [
+    boardID,
+  ]);
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 
 // boards/{board_id}/columns -> we don't have /columns b/c columns are always inside of boards and this structure is more intuitive to describe that relationship
 // GET - read all columns in a board board
 app.get("/boards/:boardID/columns", async (req, res) => {
   const boardID = req.params.boardID;
-  const data = await queryDb("select * from columns where board_id = $1;", [
-    boardID,
-  ]);
+  const queryResult = await queryDb(
+    "select * from columns where board_id = $1;",
+    [boardID]
+  );
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 // POST - create a column in a board
 app.post("/boards/:boardID/columns", async (req, res) => {
@@ -112,41 +135,40 @@ app.post("/boards/:boardID/columns", async (req, res) => {
     [columnData.name, columnData.position, boardID]
   );
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(queryResult));
+  res.status(200).json(queryResult);
 });
 // boards/{board_id}/columns/{column_id}
 // GET - read an individual column
 app.get("/boards/:boardID/columns/:columnID", async (req, res) => {
   const columnID = req.params.columnID;
-  const data = await queryDb("select * from columns where id = $1;", [
+  const queryResult = await queryDb("select * from columns where id = $1;", [
     columnID,
   ]);
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 // PUT
 // PATCH
 // DELETE
 app.delete("/boards/:boardID/columns/:columnID", async (req, res) => {
   const columnID = req.params.columnID;
-  const data = await queryDb("delete from columns where id = $1;", [columnID]);
+  const queryResult = await queryDb("delete from columns where id = $1;", [
+    columnID,
+  ]);
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 
 // /boards/{boardId}/columns/{column_id}/tasks (gets all tasks for column)
 // read - GET
 app.get("/boards/:boardId/columns/:columnID/tasks", async (req, res) => {
   const columnID = req.params.columnID;
-  const data = await queryDb("select * from tasks where column_id = $1;", [
-    columnID,
-  ]);
+  const queryResult = await queryDb(
+    "select * from tasks where column_id = $1;",
+    [columnID]
+  );
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 
 // tasks
@@ -165,21 +187,19 @@ app.post("/tasks", async (req, res) => {
     ]
   );
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(queryResult));
+  res.status(200).json(queryResult);
 });
 
 // tasks/{task_id} (individual task) <-- not /boards/{boardId}/columns/{column_id}/tasks/{task_id} b/c tasks can be moved between boards
 // read - GET (need to get subtasks as well)
 app.get("/tasks/:taskID", async (req, res) => {
   const taskID = req.params.taskID;
-  const data = await queryDb(
+  const queryResult = await queryDb(
     "select * from tasks where id = $1 or parent_id = $1",
     [taskID]
   );
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.status(200).json(queryResult);
 });
 
 // PUT
@@ -187,10 +207,11 @@ app.get("/tasks/:taskID", async (req, res) => {
 // DELETE
 app.delete("/tasks/:taskID", async (req, res) => {
   const taskID = req.params.taskID;
-  const data = await queryDb("delete from tasks where id = $1;", [taskID]);
+  const queryResult = await queryDb("delete from tasks where id = $1;", [
+    taskID,
+  ]);
   res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  rres.status(200).json(queryResult);
 });
 
 app.listen(port, () => {

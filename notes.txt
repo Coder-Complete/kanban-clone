@@ -17,14 +17,16 @@
   - make the routes
     - x - hyphen as word delimiter is preferred
     - x - show that vanilla node.js will get ugly, esp with dynamic routes
-    - use express
-10. postman - test the routes (can test w/ backend url as well, but benefits below). benefits:
-  - collections (don't need to rewrite queries, organization)
-  - visualize data
-  - share and collab
+    - use express, benefits: 
+      - easy org
+      - plugin libraries (middleware)
+    - postman - execute and test the routes, benefits:
+      - collections (don't need to rewrite queries, organization)
+      - visualize data
+      - share and collab
+10. break out routes into mvc
 11. use sequelize instead of queries
   - define & implement db schemas (sequelize, mvc)
-  - express benefits - easy org, plugin libraries (middleware), cors middleware makes life easier
   - sequelize benefits - define relationships like oop, don't have to use sql except for more complicated queries
 12. mention indexes for db
 13. build the frontend (start w/ react router)
