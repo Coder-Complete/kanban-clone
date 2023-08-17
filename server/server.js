@@ -203,6 +203,32 @@ app.put("/boards/:boardID/columns/:columnID", async (req, res) => {
   }
 });
 // PATCH
+app.patch("/boards/:boardID/columns/:columnID", async (req, res) => {
+  const columnID = req.params.columnID;
+  const updatedFields = req.body;
+  try {
+    // Generate the SET clause dynamically based on updatedFields
+    const setClause = Object.keys(updatedFields)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(", ");
+
+    // Perform the SQL update operation
+    const updateQuery = `
+        UPDATE columns
+        SET ${setClause}
+        WHERE id = $${Object.keys(updatedFields).length + 1}
+        RETURNING *
+    `;
+    const updateValues = Object.values(updatedFields).concat(columnID);
+    const queryResponse = await pool.query(updateQuery, updateValues);
+    res.json(queryResponse);
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the resource." });
+  }
+});
 // DELETE
 app.delete("/boards/:boardID/columns/:columnID", async (req, res) => {
   const columnID = req.params.columnID;
@@ -287,6 +313,32 @@ app.put("/tasks/:taskID", async (req, res) => {
   }
 });
 // PATCH
+app.patch("/tasks/:taskID", async (req, res) => {
+  const taskID = req.params.taskID;
+  const updatedFields = req.body;
+  try {
+    // Generate the SET clause dynamically based on updatedFields
+    const setClause = Object.keys(updatedFields)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(", ");
+
+    // Perform the SQL update operation
+    const updateQuery = `
+        UPDATE tasks
+        SET ${setClause}
+        WHERE id = $${Object.keys(updatedFields).length + 1}
+        RETURNING *
+    `;
+    const updateValues = Object.values(updatedFields).concat(taskID);
+    const queryResponse = await pool.query(updateQuery, updateValues);
+    res.json(queryResponse);
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the resource." });
+  }
+});
 // DELETE
 app.delete("/tasks/:taskID", async (req, res) => {
   const taskID = req.params.taskID;
