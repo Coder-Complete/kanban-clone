@@ -105,6 +105,32 @@ app.put("/boards/:boardID", async (req, res) => {
   }
 });
 // PATCH
+app.patch("/boards/:boardID", async (req, res) => {
+  const boardID = req.params.boardID;
+  const updatedFields = req.body;
+  try {
+    // Generate the SET clause dynamically based on updatedFields
+    const setClause = Object.keys(updatedFields)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(", ");
+
+    // Perform the SQL update operation
+    const updateQuery = `
+        UPDATE boards
+        SET ${setClause}
+        WHERE id = $${Object.keys(updatedFields).length + 1}
+        RETURNING *
+    `;
+    const updateValues = Object.values(updatedFields).concat(boardID);
+    const queryResponse = await pool.query(updateQuery, updateValues);
+    res.json(queryResponse);
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the resource." });
+  }
+});
 // DELETE
 app.delete("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
