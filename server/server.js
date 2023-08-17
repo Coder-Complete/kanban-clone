@@ -1,7 +1,5 @@
 /* 
   next:
-    - get individual task
-    - do delete routes for everything
     - do update routes for everything
     - entire board route
     - home-screen route
@@ -78,13 +76,21 @@ app.post("/boards", async (req, res) => {
 // GET - get an individual board
 app.get("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
-  const data = await queryDb(`select * from boards where id = $1;`, [boardID]);
+  const data = await queryDb("select * from boards where id = $1;", [boardID]);
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
-//       - update - POST
-//       - delete - POST
+// PUT
+// PATCH
+// DELETE
+app.delete("/boards/:boardID", async (req, res) => {
+  const boardID = req.params.boardID;
+  const data = await queryDb("delete from boards where id = $1;", [boardID]);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 
 // boards/{board_id}/columns -> we don't have /columns b/c columns are always inside of boards and this structure is more intuitive to describe that relationship
 // GET - read all columns in a board board
@@ -120,8 +126,16 @@ app.get("/boards/:boardID/columns/:columnID", async (req, res) => {
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
-// update - POST
-// delete - POST
+// PUT
+// PATCH
+// DELETE
+app.delete("/boards/:boardID/columns/:columnID", async (req, res) => {
+  const columnID = req.params.columnID;
+  const data = await queryDb("delete from columns where id = $1;", [columnID]);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 
 // /boards/{boardId}/columns/{column_id}/tasks (gets all tasks for column)
 // read - GET
@@ -156,6 +170,7 @@ app.post("/tasks", async (req, res) => {
 });
 
 // tasks/{task_id} (individual task) <-- not /boards/{boardId}/columns/{column_id}/tasks/{task_id} b/c tasks can be moved between boards
+// read - GET (need to get subtasks as well)
 app.get("/tasks/:taskID", async (req, res) => {
   const taskID = req.params.taskID;
   const data = await queryDb(
@@ -167,9 +182,16 @@ app.get("/tasks/:taskID", async (req, res) => {
   res.send(JSON.stringify(data));
 });
 
-// read - GET (need to get subtasks as well)
-// update - POST
-// delete - POST
+// PUT
+// PATCH
+// DELETE
+app.delete("/tasks/:taskID", async (req, res) => {
+  const taskID = req.params.taskID;
+  const data = await queryDb("delete from tasks where id = $1;", [taskID]);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
 
 app.listen(port, () => {
   console.log(
