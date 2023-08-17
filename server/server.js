@@ -48,11 +48,66 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("You've hit the API!");
 });
-//     home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
-//       - read - GET
+// home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
+// GET
+app.get("/home-screen", (req, res) => {
+  // SELECT id, name
+  // FROM board
+  // ORDER BY id
+  // LIMIT 1;
+
+  // SELECT
+  //   c.id AS column_id,
+  //   c.name AS column_name,
+  //   c.position AS column_position,
+  //   t.id AS task_id,
+  //   t.title AS task_title,
+  //   t.description AS task_description
+  // FROM
+  //     column AS c
+  // LEFT JOIN
+  //     tasks AS t ON c.id = t.column_id
+  // WHERE
+  //     c.board_id = ? -- Replace '?' with the ID of the first board you retrieved
+  // ORDER BY
+  //     c.position, t.id;
+  res.send("You've hit the home screen route!");
+});
 //     entire-board/{board_id} (all info for board including columns and tasks)
 //       - read - GET
+app.get("/entire-board/:boardId", async (req, res) => {
+  const boardId = req.params.boardId;
 
+  // The JOIN between the board and column tables links them using the board_id foreign key.
+  // The LEFT JOIN between the column and tasks tables is used since tasks might not exist in all columns.
+  // The WHERE clause filters the results to a specific board using its id.
+
+  const queryResult = await queryDb(
+    `SELECT
+      b.id AS board_id,
+      b.name AS board_name,
+      b.created_date AS board_created_date,
+      c.id AS column_id,
+      c.name AS column_name,
+      c.position AS column_position,
+      t.id AS task_id,
+      t.title AS task_title,
+      t.description AS task_description,
+      t.created_date AS task_created_date,
+      t.parent_id AS task_parent_id
+    FROM
+      boards AS b
+    JOIN
+      columns AS c ON b.id = c.board_id
+    LEFT JOIN
+      tasks AS t ON c.id = t.column_id
+    WHERE
+      b.id = $1`,
+    [boardId]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).json(queryResult);
+});
 // boards
 // GET - gets all the boards
 app.get("/boards", async (req, res) => {
@@ -74,17 +129,17 @@ app.post("/boards", async (req, res) => {
 
 // boards/{board_id}
 // GET - get an individual board
-app.get("/boards/:boardID", async (req, res) => {
-  const boardID = req.params.boardID;
+app.get("/boards/:boardId", async (req, res) => {
+  const boardId = req.params.boardId;
   const queryResult = await queryDb("select * from boards where id = $1;", [
-    boardID,
+    boardId,
   ]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
 });
 // PUT
-app.put("/boards/:boardID", async (req, res) => {
-  const boardID = req.params.boardID;
+app.put("/boards/:boardId", async (req, res) => {
+  const boardId = req.params.boardId;
   const updatedData = req.body;
   try {
     // Perform the SQL update operation
@@ -94,7 +149,7 @@ app.put("/boards/:boardID", async (req, res) => {
           WHERE id = $2
           RETURNING *
       `;
-    const updateValues = [updatedData.name, boardID];
+    const updateValues = [updatedData.name, boardId];
     const queryResult = await pool.query(updateQuery, updateValues);
     res.status(200).json(queryResult);
   } catch (error) {
@@ -105,8 +160,8 @@ app.put("/boards/:boardID", async (req, res) => {
   }
 });
 // PATCH
-app.patch("/boards/:boardID", async (req, res) => {
-  const boardID = req.params.boardID;
+app.patch("/boards/:boardId", async (req, res) => {
+  const boardId = req.params.boardId;
   const updatedFields = req.body;
   try {
     // Generate the SET clause dynamically based on updatedFields
@@ -121,7 +176,7 @@ app.patch("/boards/:boardID", async (req, res) => {
         WHERE id = $${Object.keys(updatedFields).length + 1}
         RETURNING *
     `;
-    const updateValues = Object.values(updatedFields).concat(boardID);
+    const updateValues = Object.values(updatedFields).concat(boardId);
     const queryResponse = await pool.query(updateQuery, updateValues);
     res.json(queryResponse);
   } catch (error) {
@@ -132,10 +187,10 @@ app.patch("/boards/:boardID", async (req, res) => {
   }
 });
 // DELETE
-app.delete("/boards/:boardID", async (req, res) => {
-  const boardID = req.params.boardID;
+app.delete("/boards/:boardId", async (req, res) => {
+  const boardId = req.params.boardId;
   const queryResult = await queryDb("delete from boards where id = $1;", [
-    boardID,
+    boardId,
   ]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
@@ -143,39 +198,39 @@ app.delete("/boards/:boardID", async (req, res) => {
 
 // boards/{board_id}/columns -> we don't have /columns b/c columns are always inside of boards and this structure is more intuitive to describe that relationship
 // GET - read all columns in a board board
-app.get("/boards/:boardID/columns", async (req, res) => {
-  const boardID = req.params.boardID;
+app.get("/boards/:boardId/columns", async (req, res) => {
+  const boardId = req.params.boardId;
   const queryResult = await queryDb(
     "select * from columns where board_id = $1;",
-    [boardID]
+    [boardId]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
 });
 // POST - create a column in a board
-app.post("/boards/:boardID/columns", async (req, res) => {
-  const boardID = req.params.boardID;
+app.post("/boards/:boardId/columns", async (req, res) => {
+  const boardId = req.params.boardId;
   const columnData = req.body;
   const queryResult = await queryDb(
     "insert into columns (name, position, board_id) values ($1, $2, $3) returning *;", // this format is neater than string templating (query could get long)
-    [columnData.name, columnData.position, boardID]
+    [columnData.name, columnData.position, boardId]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
 });
 // boards/{board_id}/columns/{column_id}
 // GET - read an individual column
-app.get("/boards/:boardID/columns/:columnID", async (req, res) => {
-  const columnID = req.params.columnID;
+app.get("/boards/:boardId/columns/:columnId", async (req, res) => {
+  const columnId = req.params.columnId;
   const queryResult = await queryDb("select * from columns where id = $1;", [
-    columnID,
+    columnId,
   ]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
 });
 // PUT
-app.put("/boards/:boardID/columns/:columnID", async (req, res) => {
-  const columnID = req.params.columnID;
+app.put("/boards/:boardId/columns/:columnId", async (req, res) => {
+  const columnId = req.params.columnId;
   const updatedData = req.body;
   try {
     // Perform the SQL update operation
@@ -190,8 +245,8 @@ app.put("/boards/:boardID/columns/:columnID", async (req, res) => {
     const updateValues = [
       updatedData.name,
       updatedData.position,
-      updatedData.boardID,
-      columnID,
+      updatedData.boardId,
+      columnId,
     ];
     const queryResult = await pool.query(updateQuery, updateValues);
     res.status(200).json(queryResult);
@@ -203,8 +258,8 @@ app.put("/boards/:boardID/columns/:columnID", async (req, res) => {
   }
 });
 // PATCH
-app.patch("/boards/:boardID/columns/:columnID", async (req, res) => {
-  const columnID = req.params.columnID;
+app.patch("/boards/:boardId/columns/:columnId", async (req, res) => {
+  const columnId = req.params.columnId;
   const updatedFields = req.body;
   try {
     // Generate the SET clause dynamically based on updatedFields
@@ -219,7 +274,7 @@ app.patch("/boards/:boardID/columns/:columnID", async (req, res) => {
         WHERE id = $${Object.keys(updatedFields).length + 1}
         RETURNING *
     `;
-    const updateValues = Object.values(updatedFields).concat(columnID);
+    const updateValues = Object.values(updatedFields).concat(columnId);
     const queryResponse = await pool.query(updateQuery, updateValues);
     res.json(queryResponse);
   } catch (error) {
@@ -230,10 +285,10 @@ app.patch("/boards/:boardID/columns/:columnID", async (req, res) => {
   }
 });
 // DELETE
-app.delete("/boards/:boardID/columns/:columnID", async (req, res) => {
-  const columnID = req.params.columnID;
+app.delete("/boards/:boardId/columns/:columnId", async (req, res) => {
+  const columnId = req.params.columnId;
   const queryResult = await queryDb("delete from columns where id = $1;", [
-    columnID,
+    columnId,
   ]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
@@ -241,11 +296,11 @@ app.delete("/boards/:boardID/columns/:columnID", async (req, res) => {
 
 // /boards/{boardId}/columns/{column_id}/tasks (gets all tasks for column)
 // read - GET
-app.get("/boards/:boardId/columns/:columnID/tasks", async (req, res) => {
-  const columnID = req.params.columnID;
+app.get("/boards/:boardId/columns/:columnId/tasks", async (req, res) => {
+  const columnId = req.params.columnId;
   const queryResult = await queryDb(
     "select * from tasks where column_id = $1;",
-    [columnID]
+    [columnId]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
@@ -262,8 +317,8 @@ app.post("/tasks", async (req, res) => {
     [
       dataFromRequest.title,
       dataFromRequest.description,
-      dataFromRequest.columnID,
-      dataFromRequest.parentID,
+      dataFromRequest.columnId,
+      dataFromRequest.parentId,
     ]
   );
   res.setHeader("Content-Type", "application/json");
@@ -272,18 +327,18 @@ app.post("/tasks", async (req, res) => {
 
 // tasks/{task_id} (individual task) <-- not /boards/{boardId}/columns/{column_id}/tasks/{task_id} b/c tasks can be moved between boards
 // read - GET (need to get subtasks as well)
-app.get("/tasks/:taskID", async (req, res) => {
-  const taskID = req.params.taskID;
+app.get("/tasks/:taskId", async (req, res) => {
+  const taskId = req.params.taskId;
   const queryResult = await queryDb(
-    "select * from tasks where id = $1 or parent_id = $1",
-    [taskID]
+    "select * from tasks where Id = $1 or parent_id = $1",
+    [taskId]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
 });
 // PUT
-app.put("/tasks/:taskID", async (req, res) => {
-  const taskID = req.params.taskID;
+app.put("/tasks/:taskId", async (req, res) => {
+  const taskId = req.params.taskId;
   const updatedData = req.body;
   try {
     // Perform the SQL update operation
@@ -299,9 +354,9 @@ app.put("/tasks/:taskID", async (req, res) => {
     const updateValues = [
       updatedData.title,
       updatedData.description,
-      updatedData.columnID,
-      updatedData.parentID,
-      taskID,
+      updatedData.columnId,
+      updatedData.parentId,
+      taskId,
     ];
     const queryResult = await pool.query(updateQuery, updateValues);
     res.status(200).json(queryResult);
@@ -313,8 +368,8 @@ app.put("/tasks/:taskID", async (req, res) => {
   }
 });
 // PATCH
-app.patch("/tasks/:taskID", async (req, res) => {
-  const taskID = req.params.taskID;
+app.patch("/tasks/:taskId", async (req, res) => {
+  const taskId = req.params.taskId;
   const updatedFields = req.body;
   try {
     // Generate the SET clause dynamically based on updatedFields
@@ -329,7 +384,7 @@ app.patch("/tasks/:taskID", async (req, res) => {
         WHERE id = $${Object.keys(updatedFields).length + 1}
         RETURNING *
     `;
-    const updateValues = Object.values(updatedFields).concat(taskID);
+    const updateValues = Object.values(updatedFields).concat(taskId);
     const queryResponse = await pool.query(updateQuery, updateValues);
     res.json(queryResponse);
   } catch (error) {
@@ -340,10 +395,10 @@ app.patch("/tasks/:taskID", async (req, res) => {
   }
 });
 // DELETE
-app.delete("/tasks/:taskID", async (req, res) => {
-  const taskID = req.params.taskID;
+app.delete("/tasks/:taskId", async (req, res) => {
+  const taskId = req.params.taskId;
   const queryResult = await queryDb("delete from tasks where id = $1;", [
-    taskID,
+    taskId,
   ]);
   res.setHeader("Content-Type", "application/json");
   rres.status(200).json(queryResult);
