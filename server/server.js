@@ -1,3 +1,12 @@
+/* 
+  next:
+    - get individual task
+    - do delete routes for everything
+    - do update routes for everything
+    - entire board route
+    - home-screen route
+*/
+
 /* eslint-disable no-undef*/
 // import http from "http";
 import pg from "pg";
@@ -146,7 +155,18 @@ app.post("/tasks", async (req, res) => {
   res.send(JSON.stringify(queryResult));
 });
 
-// tasks/{task_id} (individual task) <-- not /boards/{boardId}/columns/{column_id}/tasks/{task_id} b/c tasks can be moved between
+// tasks/{task_id} (individual task) <-- not /boards/{boardId}/columns/{column_id}/tasks/{task_id} b/c tasks can be moved between boards
+app.get("/tasks/:taskID", async (req, res) => {
+  const taskID = req.params.taskID;
+  const data = await queryDb(
+    "select * from tasks where id = $1 or parent_id = $1",
+    [taskID]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
+
 // read - GET (need to get subtasks as well)
 // update - POST
 // delete - POST
