@@ -63,7 +63,7 @@ app.get("/boards", async (req, res) => {
 // POST - create a board
 app.post("/boards", async (req, res) => {
   const dataFromRequest = req.body;
-  const boardName = dataFromRequest.boardName;
+  const boardName = dataFromRequest.name;
   const queryResult = await queryDb(
     "insert into boards (name) values ($1) returning *;", // it's common to return the object that just got created
     [boardName]
@@ -148,6 +148,34 @@ app.get("/boards/:boardID/columns/:columnID", async (req, res) => {
   res.status(200).json(queryResult);
 });
 // PUT
+app.put("/boards/:boardID/columns/:columnID", async (req, res) => {
+  const columnID = req.params.columnID;
+  const updatedData = req.body;
+  try {
+    // Perform the SQL update operation
+    const updateQuery = `
+          UPDATE columns
+          SET name = $1,
+            position = $2,
+            board_id = $3
+          WHERE id = $4
+          RETURNING *
+      `;
+    const updateValues = [
+      updatedData.name,
+      updatedData.position,
+      updatedData.boardID,
+      columnID,
+    ];
+    const queryResult = await pool.query(updateQuery, updateValues);
+    res.status(200).json(queryResult);
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the resource." });
+  }
+});
 // PATCH
 // DELETE
 app.delete("/boards/:boardID/columns/:columnID", async (req, res) => {
@@ -201,8 +229,37 @@ app.get("/tasks/:taskID", async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(queryResult);
 });
-
 // PUT
+app.put("/tasks/:taskID", async (req, res) => {
+  const taskID = req.params.taskID;
+  const updatedData = req.body;
+  try {
+    // Perform the SQL update operation
+    const updateQuery = `
+          UPDATE tasks
+          SET title = $1,
+            description = $2,
+            column_id = $3,
+            parent_id = $4
+          WHERE id = $5
+          RETURNING *
+      `;
+    const updateValues = [
+      updatedData.title,
+      updatedData.description,
+      updatedData.columnID,
+      updatedData.parentID,
+      taskID,
+    ];
+    const queryResult = await pool.query(updateQuery, updateValues);
+    res.status(200).json(queryResult);
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the resource." });
+  }
+});
 // PATCH
 // DELETE
 app.delete("/tasks/:taskID", async (req, res) => {
