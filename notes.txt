@@ -7,23 +7,24 @@
 6. x - deploy and all is connected
 7. x - identify entities for db, explain sql, then show data needed per screen in figma
 8. x - play around w/ db then make script to populate it (first cmd is drop table)
-9. build backend for front page w/o express nor sequelize (actually write sql queries)
+9. x - build backend for front page w/o sequelize (actually write sql queries) and express (at least at first)
   - x - rewrite to use pg.Pool
     - x - https://node-postgres.com/apis/pool
     - x - https://chat.openai.com/?model=text-davinci-002-render-sha
   - x - first, vid explaining the queries in the design
   - x - then explain get, post (new entry), put (replace existing entry), delete, patch (modify PART OF existing entry)
   - x - comment the routes we need
-  - make the routes
+  - x - make the routes
     - x - hyphen as word delimiter is preferred
     - x - show that vanilla node.js will get ugly, esp with dynamic routes
-    - use express, benefits: 
-      - easy org
-      - plugin libraries (middleware)
-    - postman - execute and test the routes, benefits:
-      - collections (don't need to rewrite queries, organization)
-      - visualize data
-      - share and collab
+    - x - use express, benefits: 
+      - x - easy org
+      - x - plugin libraries (middleware)
+    - x - postman - execute and test the routes, benefits:
+      - x - collections (don't need to rewrite queries, organization)
+      - x - visualize data
+      - x - share and collab
+    - error handling
 10. break out routes into mvc
 11. use sequelize instead of queries
   - define & implement db schemas (sequelize, mvc)

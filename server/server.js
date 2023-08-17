@@ -1,12 +1,3 @@
-/* 
-  next:
-    - do put routes for everything
-    - do patch routes for everything
-    - add error handling
-    - entire board route
-    - home-screen route
-*/
-
 /* eslint-disable no-undef*/
 // import http from "http";
 import pg from "pg";
@@ -50,28 +41,41 @@ app.get("/", (req, res) => {
 });
 // home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
 // GET
-app.get("/home-screen", (req, res) => {
-  // SELECT id, name
-  // FROM board
-  // ORDER BY id
-  // LIMIT 1;
+app.get("/home-screen", async (req, res) => {
+  const dataForFrontend = {
+    boards: null,
+    firstBoardData: null,
+  };
+  const boards = await queryDb(`
+    SELECT id, name
+    FROM boards
+    ORDER BY name;`);
 
-  // SELECT
-  //   c.id AS column_id,
-  //   c.name AS column_name,
-  //   c.position AS column_position,
-  //   t.id AS task_id,
-  //   t.title AS task_title,
-  //   t.description AS task_description
-  // FROM
-  //     column AS c
-  // LEFT JOIN
-  //     tasks AS t ON c.id = t.column_id
-  // WHERE
-  //     c.board_id = ? -- Replace '?' with the ID of the first board you retrieved
-  // ORDER BY
-  //     c.position, t.id;
-  res.send("You've hit the home screen route!");
+  dataForFrontend.boards = boards;
+  const firstBoard = boards[0];
+
+  const dataForFirstBoard = await queryDb(
+    `SELECT
+      c.id AS column_id,
+      c.name AS column_name,
+      c.position AS column_position,
+      t.id AS task_id,
+      t.title AS task_title,
+      t.description AS task_description
+    FROM
+        columns AS c
+    LEFT JOIN
+        tasks AS t ON c.id = t.column_id
+    WHERE
+        c.board_id = $1
+    ORDER BY
+        c.position, t.id;`,
+    [firstBoard.id]
+  );
+
+  dataForFrontend.firstBoardData = dataForFirstBoard;
+
+  res.status(200).json(dataForFrontend);
 });
 //     entire-board/{board_id} (all info for board including columns and tasks)
 //       - read - GET
@@ -84,25 +88,40 @@ app.get("/entire-board/:boardId", async (req, res) => {
 
   const queryResult = await queryDb(
     `SELECT
-      b.id AS board_id,
-      b.name AS board_name,
-      b.created_date AS board_created_date,
       c.id AS column_id,
       c.name AS column_name,
       c.position AS column_position,
       t.id AS task_id,
       t.title AS task_title,
-      t.description AS task_description,
-      t.created_date AS task_created_date,
-      t.parent_id AS task_parent_id
+      t.description AS task_description
     FROM
-      boards AS b
-    JOIN
-      columns AS c ON b.id = c.board_id
+        columns AS c
     LEFT JOIN
-      tasks AS t ON c.id = t.column_id
+        tasks AS t ON c.id = t.column_id
     WHERE
-      b.id = $1`,
+        c.board_id = $1
+    ORDER BY
+        c.position, t.id;`,
+    // `SELECT
+    //   b.id AS board_id,
+    //   b.name AS board_name,
+    //   b.created_date AS board_created_date,
+    //   c.id AS column_id,
+    //   c.name AS column_name,
+    //   c.position AS column_position,
+    //   t.id AS task_id,
+    //   t.title AS task_title,
+    //   t.description AS task_description,
+    //   t.created_date AS task_created_date,
+    //   t.parent_id AS task_parent_id
+    // FROM
+    //   boards AS b
+    // JOIN
+    //   columns AS c ON b.id = c.board_id
+    // LEFT JOIN
+    //   tasks AS t ON c.id = t.column_id
+    // WHERE
+    //   b.id = $1`,
     [boardId]
   );
   res.setHeader("Content-Type", "application/json");
