@@ -19,9 +19,9 @@ let dbConfig = process.env.PGUSER
 
 const pool = new pg.Pool(dbConfig);
 
-async function queryDb(query) {
+async function queryDb(query, values) {
   try {
-    const res = await pool.query(query);
+    const res = await pool.query(query, values || []); // do i need "|| []" ?
     return res.rows;
   } catch (err) {
     console.error(err);
@@ -43,76 +43,113 @@ app.get("/", (req, res) => {
 //       - read - GET
 //     entire-board/{board_id} (all info for board including columns and tasks)
 //       - read - GET
-//     boards (gets all the boards)
-//       - read - GET
+
+// boards
+// GET - gets all the boards
 app.get("/boards", async (req, res) => {
   const data = await queryDb("select * from boards;");
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
-//       - create - POST
+// POST - create a board
 app.post("/boards", async (req, res) => {
   const dataFromRequest = req.body;
   const boardName = dataFromRequest.boardName;
-  const result = await queryDb(
-    `insert into boards (name) values ('${boardName}') returning *;` // it's common to return the object that just got created
+  const queryResult = await queryDb(
+    "insert into boards (name) values ($1) returning *;", // it's common to return the object that just got created
+    [boardName]
   );
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
-  res.send(JSON.stringify(result));
+  res.send(JSON.stringify(queryResult));
 });
-//     boards/{board_id} (individual board)
-//       - read - GET
+
+// boards/{board_id}
+// GET - get an individual board
 app.get("/boards/:boardID", async (req, res) => {
   const boardID = req.params.boardID;
-  const data = await queryDb(`select * from boards where id = ${boardID};`);
+  const data = await queryDb(`select * from boards where id = $1;`, [boardID]);
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
 //       - update - POST
 //       - delete - POST
-//     boards/{board_id}/columns (gets all columns for board)
-//       - read - GET
+
+// boards/{board_id}/columns -> we don't have /columns b/c columns are always inside of boards and this structure is more intuitive to describe that relationship
+// GET - read all columns in a board board
 app.get("/boards/:boardID/columns", async (req, res) => {
   const boardID = req.params.boardID;
-  const data = await queryDb(
-    `select * from columns where board_id = ${boardID};`
+  const data = await queryDb("select * from columns where board_id = $1;", [
+    boardID,
+  ]);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
+// POST - create a column in a board
+app.post("/boards/:boardID/columns", async (req, res) => {
+  const boardID = req.params.boardID;
+  const columnData = req.body;
+  const queryResult = await queryDb(
+    "insert into columns (name, position, board_id) values ($1, $2, $3) returning *;", // this format is neater than string templating (query could get long)
+    [columnData.name, columnData.position, boardID]
   );
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.send(JSON.stringify(queryResult));
 });
-//     columns/{column_id} (individual column)
-//       - create - POST
-//       - read - GET
-app.get("/columns/:columnID", async (req, res) => {
+// boards/{board_id}/columns/{column_id}
+// GET - read an individual column
+app.get("/boards/:boardID/columns/:columnID", async (req, res) => {
   const columnID = req.params.columnID;
-  const data = await queryDb(`select * from columns where id = ${columnID};`);
+  const data = await queryDb("select * from columns where id = $1;", [
+    columnID,
+  ]);
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
   res.send(JSON.stringify(data));
 });
-//       - update - POST
-//       - delete - POST
-//     columns/{column_id}/tasks (gets all tasks for column)
-//       - read - GET
-app.get("/columns/:columnID/tasks", async (req, res) => {
+// update - POST
+// delete - POST
+
+// /boards/{boardId}/columns/{column_id}/tasks (gets all tasks for column)
+// read - GET
+app.get("/boards/:boardId/columns/:columnID/tasks", async (req, res) => {
   const columnID = req.params.columnID;
-  const data = await queryDb(
-    `select * from tasks where column_id = ${columnID};`
+  const data = await queryDb("select * from tasks where column_id = $1;", [
+    columnID,
+  ]);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.send(JSON.stringify(data));
+});
+
+// tasks
+// create - POST
+app.post("/tasks", async (req, res) => {
+  const dataFromRequest = req.body;
+  // const boardName = dataFromRequest.boardName;
+  const queryResult = await queryDb(
+    // it's common to return the object that just got created
+    "insert into tasks (title, description, column_id, parent_id) values ($1, $2, $3, $4) returning *;",
+    [
+      dataFromRequest.title,
+      dataFromRequest.description,
+      dataFromRequest.columnID,
+      dataFromRequest.parentID,
+    ]
   );
   res.setHeader("Content-Type", "application/json");
   res.statusCode = 200;
-  res.send(JSON.stringify(data));
+  res.send(JSON.stringify(queryResult));
 });
-//     tasks/{task_id} (individual task)
-//       - create - POST
-//       - read - GET (need to get subtasks as well)
-//       - update - POST
-//       - delete - POST
-//
+
+// tasks/{task_id} (individual task) <-- not /boards/{boardId}/columns/{column_id}/tasks/{task_id} b/c tasks can be moved between
+// read - GET (need to get subtasks as well)
+// update - POST
+// delete - POST
 
 app.listen(port, () => {
   console.log(
