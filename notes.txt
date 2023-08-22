@@ -7,7 +7,7 @@
 6. x - deploy and all is connected
 7. x - identify entities for db, explain sql, then show data needed per screen in figma
 8. x - play around w/ db then make script to populate it (first cmd is drop table)
-9. x - build backend for front page w/o sequelize (actually write sql queries) and express (at least at first)
+9. build backend for front page w/o sequelize (actually write sql queries) and express (at least at first)
   - x - rewrite to use pg.Pool
     - x - https://node-postgres.com/apis/pool
     - x - https://chat.openai.com/?model=text-davinci-002-render-sha

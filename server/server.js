@@ -1,5 +1,4 @@
 /* eslint-disable no-undef*/
-// import http from "http";
 import pg from "pg";
 import "dotenv/config";
 import express from "express";
@@ -102,26 +101,6 @@ app.get("/entire-board/:boardId", async (req, res) => {
         c.board_id = $1
     ORDER BY
         c.position, t.id;`,
-    // `SELECT
-    //   b.id AS board_id,
-    //   b.name AS board_name,
-    //   b.created_date AS board_created_date,
-    //   c.id AS column_id,
-    //   c.name AS column_name,
-    //   c.position AS column_position,
-    //   t.id AS task_id,
-    //   t.title AS task_title,
-    //   t.description AS task_description,
-    //   t.created_date AS task_created_date,
-    //   t.parent_id AS task_parent_id
-    // FROM
-    //   boards AS b
-    // JOIN
-    //   columns AS c ON b.id = c.board_id
-    // LEFT JOIN
-    //   tasks AS t ON c.id = t.column_id
-    // WHERE
-    //   b.id = $1`,
     [boardId]
   );
   res.setHeader("Content-Type", "application/json");
@@ -428,74 +407,3 @@ app.listen(port, () => {
     `Express server is running on port ${port}, url http://127.0.0.1:${port}`
   );
 });
-
-// const server = http.createServer(async (req, res) => {
-//   const origin = req.headers.origin;
-//   const allowedOrigins = [
-//     "http://localhost:5173",
-//     "https://kanban-clone-frontend.onrender.com",
-//   ];
-//   if (allowedOrigins.includes(origin)) {
-//     res.setHeader("Access-Control-Allow-Origin", origin);
-//   }
-
-//   /*
-//     DEMONSTRATING WHY VANILLA NODE.JS IS UGLY
-
-//     const segments = req.url.split("/");
-//     for the /entire-board/{board_id} route, board_id will be segments[2]
-//     and the if case for this is if (segments[1] === 'entire-board' && segments.length === 2)
-//     this is quite ugly
-
-//     elaborate on all the different if conditions we'd need
-//   */
-
-//   // if (req.url === "/") {
-//   //   res.setHeader("Content-Type", "application/json");
-//   //   res.statusCode = 200;
-//   //   res.write(
-//   //     JSON.stringify({
-//   //       name: "jared",
-//   //       age: 30,
-//   //     })
-//   //   );
-//   // } else
-//    if (req.url === "/boards") {
-//     let data = await queryDb("select * from boards;");
-//     res.setHeader("Content-Type", "application/json");
-//     res.statusCode = 200;
-//     res.write(JSON.stringify(data));
-//   } else if (req.url === "/user/1") {
-//     res.setHeader("Content-Type", "application/json");
-//     res.statusCode = 200;
-//     res.write(
-//       JSON.stringify({
-//         name: "jared",
-//         age: 30,
-//       })
-//     );
-//   } else if (req.url === "/group/1") {
-//     res.setHeader("Content-Type", "application/json");
-//     res.statusCode = 200;
-//     res.write(
-//       JSON.stringify({
-//         name: "friends",
-//         members: 100,
-//       })
-//     );
-//   } else {
-//     res.setHeader("Content-Type", "application/json");
-//     res.statusCode = 404;
-//     JSON.stringify({
-//       error: true,
-//       message: "endpoint doesn't exist",
-//     });
-//   }
-//   res.end();
-// });
-
-// server.listen(5030, () => {
-//   console.log(
-//     "listening for requests on port 5030, url is http://127.0.0.1:5030"
-//   );
-// });
