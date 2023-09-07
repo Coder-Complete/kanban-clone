@@ -44,42 +44,41 @@ app.get("/", (req, res) => {
 
 app.get("/home-screen", async (req, res, next) => {
   try {
-    // const dataForFrontend = {
-    //   boards: null,
-    //   firstBoardData: null,
-    // };
+    const dataForFrontend = {
+      boards: null,
+      firstBoardData: null,
+    };
     const boards = await queryDb(`
-      SELECT id, name, aslkdfjksdf
+      SELECT id, name
       FROM boards
       ORDER BY name;
     `);
 
-    // dataForFrontend.boards = boards;
-    // const firstBoard = boards[0];
+    dataForFrontend.boards = boards;
+    const firstBoard = boards[0];
 
-    // const dataForFirstBoard = await queryDb(
-    //   `SELECT
-    //     c.id AS column_id,
-    //     c.name AS column_name,
-    //     c.position AS column_position,
-    //     t.id AS task_id,
-    //     t.title AS task_title,
-    //     t.description AS task_description
-    //   FROM
-    //       columns AS c
-    //   LEFT JOIN
-    //       tasks AS t ON c.id = t.column_id
-    //   WHERE
-    //       c.board_id = $1
-    //   ORDER BY
-    //       c.position, t.id;`,
-    //   [firstBoard.id]
-    // );
+    const dataForFirstBoard = await queryDb(
+      `SELECT
+        c.id AS column_id,
+        c.name AS column_name,
+        c.position AS column_position,
+        t.id AS task_id,
+        t.title AS task_title,
+        t.description AS task_description
+      FROM
+          columns AS c
+      LEFT JOIN
+          tasks AS t ON c.id = t.column_id
+      WHERE
+          c.board_id = $1
+      ORDER BY
+          c.position, t.id;`,
+      [firstBoard.id]
+    );
 
-    // dataForFrontend.firstBoardData = dataForFirstBoard;
+    dataForFrontend.firstBoardData = dataForFirstBoard;
 
-    // res.status(200).json(dataForFrontend);
-    res.status(200).json(boards);
+    res.status(200).json(dataForFrontend);
   } catch (e) {
     next(e); // passes to 500 handler
   }
