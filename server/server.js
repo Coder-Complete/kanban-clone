@@ -24,7 +24,8 @@ async function queryDb(query, values) {
     return res.rows;
   } catch (err) {
     console.error(err);
-    return [];
+    // return [];
+    throw err;
   }
 }
 
@@ -41,53 +42,60 @@ app.get("/", (req, res) => {
 // home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
 // GET
 
-app.get("/home-screen", async (req, res) => {
-  const dataForFrontend = {
-    boards: null,
-    firstBoardData: null,
-  };
-  const boards = await queryDb(`
-    SELECT id, name
-    FROM boards
-    ORDER BY name;`);
+app.get("/home-screen", async (req, res, next) => {
+  try {
+    // const dataForFrontend = {
+    //   boards: null,
+    //   firstBoardData: null,
+    // };
+    const boards = await queryDb(`
+      SELECT id, name, aslkdfjksdf
+      FROM boards
+      ORDER BY name;
+    `);
 
-  dataForFrontend.boards = boards;
-  const firstBoard = boards[0];
+    // dataForFrontend.boards = boards;
+    // const firstBoard = boards[0];
 
-  const dataForFirstBoard = await queryDb(
-    `SELECT
-      c.id AS column_id,
-      c.name AS column_name,
-      c.position AS column_position,
-      t.id AS task_id,
-      t.title AS task_title,
-      t.description AS task_description
-    FROM
-        columns AS c
-    LEFT JOIN
-        tasks AS t ON c.id = t.column_id
-    WHERE
-        c.board_id = $1
-    ORDER BY
-        c.position, t.id;`,
-    [firstBoard.id]
-  );
+    // const dataForFirstBoard = await queryDb(
+    //   `SELECT
+    //     c.id AS column_id,
+    //     c.name AS column_name,
+    //     c.position AS column_position,
+    //     t.id AS task_id,
+    //     t.title AS task_title,
+    //     t.description AS task_description
+    //   FROM
+    //       columns AS c
+    //   LEFT JOIN
+    //       tasks AS t ON c.id = t.column_id
+    //   WHERE
+    //       c.board_id = $1
+    //   ORDER BY
+    //       c.position, t.id;`,
+    //   [firstBoard.id]
+    // );
 
-  dataForFrontend.firstBoardData = dataForFirstBoard;
+    // dataForFrontend.firstBoardData = dataForFirstBoard;
 
-  res.status(200).json(dataForFrontend);
+    // res.status(200).json(dataForFrontend);
+    res.status(200).json(boards);
+  } catch (e) {
+    next(e); // passes to 500 handler
+  }
 });
+
 //     entire-board/{board_id} (all info for board including columns and tasks)
 //       - read - GET
-app.get("/entire-board/:boardId", async (req, res) => {
+app.get("/entire-board/:boardId", async (req, res, next) => {
   const boardId = req.params.boardId;
 
   // The JOIN between the board and column tables links them using the board_id foreign key.
   // The LEFT JOIN between the column and tasks tables is used since tasks might not exist in all columns.
   // The WHERE clause filters the results to a specific board using its id.
-
-  const queryResult = await queryDb(
-    `SELECT
+  try {
+    const queryResult = await queryDb(
+      `SELECT
       c.id AS column_id,
       c.name AS column_name,
       c.position AS column_position,
@@ -102,10 +110,13 @@ app.get("/entire-board/:boardId", async (req, res) => {
         c.board_id = $1
     ORDER BY
         c.position, t.id;`,
-    [boardId]
-  );
-  res.setHeader("Content-Type", "application/json");
-  res.status(200).json(queryResult);
+      [boardId]
+    );
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).json(queryResult);
+  } catch (e) {
+    next(e);
+  }
 });
 // boards
 // GET - gets all the boards
