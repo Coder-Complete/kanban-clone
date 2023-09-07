@@ -40,6 +40,7 @@ app.get("/", (req, res) => {
 });
 // home-screen (gets all data for home screen: 1. list of boards, 2. all columns and tasks for the first board)
 // GET
+
 app.get("/home-screen", async (req, res) => {
   const dataForFrontend = {
     boards: null,
@@ -399,7 +400,16 @@ app.delete("/tasks/:taskId", async (req, res) => {
     taskId,
   ]);
   res.setHeader("Content-Type", "application/json");
-  rres.status(200).json(queryResult);
+  res.status(200).json(queryResult);
+});
+
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 app.listen(port, () => {
