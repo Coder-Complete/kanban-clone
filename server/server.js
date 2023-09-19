@@ -3,28 +3,28 @@ import http from "http";
 import pg from "pg";
 import "dotenv/config";
 
+const dbConfig = process.env.PGUSER
+  ? {
+      user: process.env.PGUSER,
+      host: process.env.PGHOST,
+      database: process.env.PGDB,
+      password: process.env.PGPWD,
+      port: process.env.PGPORT,
+    }
+  : {
+      connectionString:
+        "postgres://admin:sOdTEpXhj9zKtcFc5EYdrWAB9fc2KsWz@dpg-cisl9l95rnujejq1v7gg-a.oregon-postgres.render.com/kanban_clone?ssl=true",
+    };
+const pool = new pg.Pool(dbConfig);
+
 async function queryDb(query) {
-  let client;
   try {
-    client = new pg.Client(
-      process.env.PGUSER
-        ? {
-            user: process.env.PGUSER,
-            host: process.env.PGHOST,
-            database: process.env.PGDB,
-            password: process.env.PGPWD,
-            port: process.env.PGPORT,
-          }
-        : "postgres://admin:sOdTEpXhj9zKtcFc5EYdrWAB9fc2KsWz@dpg-cisl9l95rnujejq1v7gg-a/kanban_clone"
-    );
-    await client.connect();
-    const res = await client.query(query);
+    await pool.connect();
+    const res = await pool.query(query);
     return res.rows;
   } catch (err) {
     console.error(err);
     return [];
-  } finally {
-    await client.end();
   }
 }
 
@@ -47,7 +47,7 @@ const server = http.createServer(async (req, res) => {
       })
     );
   } else if (req.url === "/boards") {
-    let data = await queryDb("select * from board;");
+    let data = await queryDb("select * from boards;");
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 200;
     res.write(JSON.stringify(data));
