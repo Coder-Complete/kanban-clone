@@ -9,8 +9,8 @@
 8. x - play around w/ db then make script to populate it (first cmd is drop table)
 9. build backend for front page w/o sequelize (actually write sql queries) and express (at least at first)
   - x - rewrite to use pg.Pool
-  - first, vid explaining the queries in the design
-  - then explain get, post (new entry), put (replace existing entry), delete, patch (modify PART OF existing entry)
+  - x - first, vid explaining the queries in the design
+  - x - then explain HTTP Verbs/Methods: GET (retrieve data), POST (new entry), PUT (replace existing entry), DELETE, and PATCH (modify PART OF existing entry)
   - comment the routes we need
   - make the routes
     - hyphen as word delimiter is preferred

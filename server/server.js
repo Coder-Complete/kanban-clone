@@ -37,6 +37,39 @@ const server = http.createServer(async (req, res) => {
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
+  /*
+
+  GET (read), POST (create), PUT (update), PATCH (update), DELETE (delete)
+
+  home screen (data we want at very beginning of our app)
+  - GET: get all the board names, and all the columns and tasks for the first board in the list of boards
+
+  entire board (data we want when we click a different board than the default (first board))
+  - GET: get all the columns and tasks within those columns for a specific board
+
+  boards
+  - GET: get list of all boards
+  - GET: get info for a specific board
+  - POST: create new board
+  - PUT & PATCH: edit existing board (change name)
+  - DELETE: delete board
+
+  columns
+  - GET: get all columns for a board
+  - GET: get info for a specific column
+  - POST: create new column
+  - PUT & PATCH: edit existing column (change name or position)
+  - DELETE: delete a column
+
+  tasks
+  - GET: get all tasks
+  - GET: get all tasks for a specific column
+  - GET: get info for a specific task
+  - POST: create new task
+  - PUT & PATCH: edit existing task (change title, description, column_id, or parent_id)
+  - DELETE: delete task
+
+  */
   if (req.url === "/") {
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 200;
@@ -46,11 +79,13 @@ const server = http.createServer(async (req, res) => {
         age: 30,
       })
     );
-  } else if (req.url === "/boards") {
+  } else if (req.url === "/boards" && req.method === "GET") {
     let data = await queryDb("select * from boards;");
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 200;
     res.write(JSON.stringify(data));
+  } else if (req.url === "/boards" && req.method === "POST") {
+    // create new board w/ sql by parsing the data sent from the frontend and doing an sql query "insert into ..."
   } else if (req.url === "/user/1") {
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 200;
