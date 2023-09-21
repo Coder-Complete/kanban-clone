@@ -11,10 +11,10 @@
   - x - rewrite to use pg.Pool
   - x - first, vid explaining the queries in the design
   - x - then explain HTTP Verbs/Methods: GET (retrieve data), POST (new entry), PUT (replace existing entry), DELETE, and PATCH (modify PART OF existing entry)
-  - comment the routes we need
+  - x - comment the routes we need
   - make the routes
-    - hyphen as word delimiter is preferred
-    - show that vanilla node.js will get ugly, esp with dynamic routes
+    - (hyphen as word delimiter is preferred)
+    - x - show that vanilla node.js will get ugly, esp with dynamic routes
     - use express, benefits: 
       - easy org
       - plugin libraries (middleware)
