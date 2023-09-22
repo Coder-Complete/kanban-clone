@@ -85,7 +85,7 @@ app.post("/boards", async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
-// - PUT & PATCH: edit existing board (change name)
+// - PUT: edit entire existing board
 app.put("/boards/:boardId", async (req, res) => {
   const name = req.body.name;
   const boardId = req.params.boardId;
@@ -96,6 +96,18 @@ app.put("/boards/:boardId", async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
+// - PATCH: edit piece of existing board
+// app.patch("/boards/:boardId", async (req, res) => {
+// const name = req.body.name;
+// const boardId = req.params.boardId;
+// const data = await queryDb(
+//   "UPDATE boards SET name=$1 WHERE id=$2 RETURNING *;",
+//   [name, boardId]
+// );
+// res.setHeader("Content-Type", "application/json");
+// res.status(200).send(JSON.stringify({ data }));
+// });
+
 // - DELETE: delete board
 app.delete("/boards/:boardId", async (req, res) => {
   const boardId = req.params.boardId;
@@ -201,7 +213,7 @@ app.post("/tasks", async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
-// - PUT & PATCH: edit existing task (change title, description, column_id, or parent_id)
+// - PUT: edit entire existing task (change title, description, column_id, and parent_id)
 app.put("/tasks/:taskId", async (req, res) => {
   const taskId = req.params.taskId;
   const title = req.body.title;
@@ -212,6 +224,27 @@ app.put("/tasks/:taskId", async (req, res) => {
     "UPDATE tasks SET title=$1, description=$2, column_id=$3, parent_id=$4 WHERE id=$5 RETURNING *;",
     [title, description, columnId, parentId, taskId]
   );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
+// PATCH: edit part of existing task (change title, description, column_id, or parent_id)
+app.patch("/tasks/:taskId", async (req, res) => {
+  const taskId = req.params.taskId;
+
+  const setClause = Object.keys(req.body)
+    .map((key, index) => `${key} = $${index + 1}`)
+    .join(", ");
+
+  const query = `
+        UPDATE tasks
+        SET ${setClause}
+        WHERE id = $${Object.keys(req.body).length + 1}
+        RETURNING *
+    `;
+
+  const values = Object.values(req.body).concat(taskId);
+
+  const data = await queryDb(query, values);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
