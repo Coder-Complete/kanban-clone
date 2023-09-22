@@ -64,14 +64,14 @@ app.get("/", (req, res) => {
 // /boards
 // - GET: get list of all boards
 app.get("/boards", async (req, res) => {
-  let data = await queryDb("select * from boards;");
+  let data = await queryDb("SELECT * FROM boards;");
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get info for a specific board
 app.get("/boards/:boardId", async (req, res) => {
   const boardId = req.params.boardId;
-  const data = await queryDb("select * from boards where id=$1;", [boardId]);
+  const data = await queryDb("SELECT * FROM boards WHERE id=$1;", [boardId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
@@ -79,17 +79,27 @@ app.get("/boards/:boardId", async (req, res) => {
 app.post("/boards", async (req, res) => {
   const name = req.body.name;
   const data = await queryDb(
-    "insert into boards (name) values ($1) returning *;",
+    "INSERT INTO boards (name) VALUES ($1) RETURNING *;",
     [name]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
 // - PUT & PATCH: edit existing board (change name)
+app.put("/boards/:boardId", async (req, res) => {
+  const name = req.body.name;
+  const boardId = req.params.boardId;
+  const data = await queryDb(
+    "UPDATE boards SET name=$1 WHERE id=$2 RETURNING *;",
+    [name, boardId]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
 // - DELETE: delete board
 app.delete("/boards/:boardId", async (req, res) => {
   const boardId = req.params.boardId;
-  const data = await queryDb("delete from boards where id=$1;", [boardId]);
+  const data = await queryDb("DELETE FROM boards WHERE id=$1;", [boardId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
@@ -97,14 +107,14 @@ app.delete("/boards/:boardId", async (req, res) => {
 // columns
 // - GET: get all columns
 app.get("/columns", async (req, res) => {
-  const data = await queryDb("select * from columns;");
+  const data = await queryDb("SELECT * FROM columns;");
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get info for a specific column
 app.get("/boards/:boardId/columns/:columnId", async (req, res) => {
   const columnId = req.params.columnId;
-  const data = await queryDb("select * from columns where id=$1;", [columnId]);
+  const data = await queryDb("SELECT * FROM columns WHERE id=$1;", [columnId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
@@ -112,7 +122,7 @@ app.get("/boards/:boardId/columns/:columnId", async (req, res) => {
 // - GET: get all columns for a board
 app.get("/boards/:boardId/columns", async (req, res) => {
   const boardId = req.params.boardId;
-  const data = await queryDb("select * from columns where board_id=$1;", [
+  const data = await queryDb("SELECT * FROM columns WHERE board_id=$1;", [
     boardId,
   ]);
   res.setHeader("Content-Type", "application/json");
@@ -124,18 +134,30 @@ app.post("/boards/:boardId/columns", async (req, res) => {
   const position = req.body.position;
   const boardId = req.params.boardId;
   const data = await queryDb(
-    "insert into columns (name, position, board_id) values ($1, $2, $3) returning *;",
+    "INSERT INTO columns (name, position, board_id) VALUES ($1, $2, $3) RETURNING *;",
     [name, position, boardId]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
 // - PUT & PATCH: edit existing column (change name or position)
+app.put("/boards/:boardId/columns/:columnId", async (req, res) => {
+  const boardId = req.params.boardId;
+  const columnId = req.params.columnId;
+  const name = req.body.name;
+  const position = req.body.position;
+  const data = await queryDb(
+    "UPDATE columns SET name=$1, position=$2, board_id=$3 WHERE id=$4 RETURNING *;",
+    [name, position, boardId, columnId]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
 // - DELETE: delete a column
 app.delete("/boards/:boardId/columns/:columnId", async (req, res) => {
   try {
     const columnId = req.params.columnId;
-    const data = await queryDb("delete from columns where id=$1;", [columnId]);
+    const data = await queryDb("DELETE FROM columns WHERE id=$1;", [columnId]);
     console.log(data);
     res.setHeader("Content-Type", "application/json");
     res.status(200).send(JSON.stringify(data));
@@ -147,21 +169,21 @@ app.delete("/boards/:boardId/columns/:columnId", async (req, res) => {
 // tasks
 // - GET: get all tasks
 app.get("/tasks", async (req, res) => {
-  const data = await queryDb("select * from tasks;");
+  const data = await queryDb("SELECT * FROM tasks;");
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get info for a specific task
 app.get("/tasks/:taskId", async (req, res) => {
   const taskId = req.params.taskId;
-  const data = await queryDb("select * from tasks where id=$1;", [taskId]);
+  const data = await queryDb("SELECT * FROM tasks WHERE id=$1;", [taskId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get all tasks for a specific column
 app.get("/boards/:boardId/columns/:columnId/tasks", async (req, res) => {
   const columnId = req.params.columnId;
-  const data = await queryDb("select * from tasks where column_id=$1;", [
+  const data = await queryDb("SELECT * FROM tasks WHERE column_id=$1;", [
     columnId,
   ]);
   res.setHeader("Content-Type", "application/json");
@@ -173,17 +195,30 @@ app.post("/tasks", async (req, res) => {
   const description = req.body.description;
   const columnId = req.body.column_id;
   const data = await queryDb(
-    "insert into tasks (title, description, column_id) values ($1, $2, $3) returning *;",
+    "INSERT INTO tasks (title, description, column_id) VALUES ($1, $2, $3) RETURNING *;",
     [title, description, columnId]
   );
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ data }));
 });
 // - PUT & PATCH: edit existing task (change title, description, column_id, or parent_id)
+app.put("/tasks/:taskId", async (req, res) => {
+  const taskId = req.params.taskId;
+  const title = req.body.title;
+  const description = req.body.description;
+  const columnId = req.body.column_id;
+  const parentId = req.body.parent_id;
+  const data = await queryDb(
+    "UPDATE tasks SET title=$1, description=$2, column_id=$3, parent_id=$4 WHERE id=$5 RETURNING *;",
+    [title, description, columnId, parentId, taskId]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
 // - DELETE: delete task
 app.delete("/tasks/:taskId", async (req, res) => {
   const taskId = req.params.taskId;
-  const data = await queryDb("delete from tasks where id=$1;", [taskId]);
+  const data = await queryDb("DELETE FROM tasks WHERE id=$1;", [taskId]);
   console.log(data);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
