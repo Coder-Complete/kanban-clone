@@ -95,7 +95,16 @@ app.get("/columns/:columnId", async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
+
 // - GET: get all columns for a board
+app.get("/boards/:boardId/columns", async (req, res) => {
+  const boardId = req.params.boardId;
+  const data = await queryDb(
+    `select * from columns where board_id=${boardId};`
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify(data));
+});
 // - POST: create new column
 // - PUT & PATCH: edit existing column (change name or position)
 // - DELETE: delete a column
@@ -126,6 +135,14 @@ app.get("/tasks/:taskId", async (req, res) => {
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get all tasks for a specific column
+app.get("/boards/:boardId/columns/:columnId/tasks", async (req, res) => {
+  const columnId = req.params.columnId;
+  const data = await queryDb(
+    `select * from tasks where column_id=${columnId};`
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify(data));
+});
 // - POST: create new task
 // - PUT & PATCH: edit existing task (change title, description, column_id, or parent_id)
 // - DELETE: delete task
