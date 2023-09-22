@@ -1,6 +1,7 @@
 /* eslint-disable no-undef*/
 import express from "express";
 import pg from "pg";
+import morgan from "morgan";
 import "dotenv/config";
 
 // GET (read), POST (create), PUT (update), PATCH (update), DELETE (delete)
@@ -31,16 +32,19 @@ const dbConfig = process.env.PGUSER
     };
 const pool = new pg.Pool(dbConfig);
 
-async function queryDb(query) {
+async function queryDb(query, values) {
   try {
     await pool.connect();
-    const res = await pool.query(query);
+    const res = await pool.query(query, values || []);
     return res.rows;
   } catch (err) {
     console.error(err);
     return [];
   }
 }
+
+app.use(morgan("tiny"));
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.setHeader("Content-Type", "application/json");
@@ -67,16 +71,25 @@ app.get("/boards", async (req, res) => {
 // - GET: get info for a specific board
 app.get("/boards/:boardId", async (req, res) => {
   const boardId = req.params.boardId;
-  const data = await queryDb(`select * from boards where id=${boardId};`);
+  const data = await queryDb("select * from boards where id=$1;", [boardId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - POST: create new board
+app.post("/boards", async (req, res) => {
+  const name = req.body.name;
+  const data = await queryDb(
+    "insert into boards (name) values ($1) returning *;",
+    [name]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
 // - PUT & PATCH: edit existing board (change name)
 // - DELETE: delete board
 app.delete("/boards/:boardId", async (req, res) => {
   const boardId = req.params.boardId;
-  const data = await queryDb(`delete from boards where id=${boardId};`);
+  const data = await queryDb("delete from boards where id=$1;", [boardId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
@@ -89,9 +102,9 @@ app.get("/columns", async (req, res) => {
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get info for a specific column
-app.get("/columns/:columnId", async (req, res) => {
+app.get("/boards/:boardId/columns/:columnId", async (req, res) => {
   const columnId = req.params.columnId;
-  const data = await queryDb(`select * from columns where id=${columnId};`);
+  const data = await queryDb("select * from columns where id=$1;", [columnId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
@@ -99,19 +112,30 @@ app.get("/columns/:columnId", async (req, res) => {
 // - GET: get all columns for a board
 app.get("/boards/:boardId/columns", async (req, res) => {
   const boardId = req.params.boardId;
-  const data = await queryDb(
-    `select * from columns where board_id=${boardId};`
-  );
+  const data = await queryDb("select * from columns where board_id=$1;", [
+    boardId,
+  ]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - POST: create new column
+app.post("/boards/:boardId/columns", async (req, res) => {
+  const name = req.body.name;
+  const position = req.body.position;
+  const boardId = req.params.boardId;
+  const data = await queryDb(
+    "insert into columns (name, position, board_id) values ($1, $2, $3) returning *;",
+    [name, position, boardId]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
 // - PUT & PATCH: edit existing column (change name or position)
 // - DELETE: delete a column
-app.delete("/columns/:columnId", async (req, res) => {
+app.delete("/boards/:boardId/columns/:columnId", async (req, res) => {
   try {
     const columnId = req.params.columnId;
-    const data = await queryDb(`delete from columns where id=${columnId};`);
+    const data = await queryDb("delete from columns where id=$1;", [columnId]);
     console.log(data);
     res.setHeader("Content-Type", "application/json");
     res.status(200).send(JSON.stringify(data));
@@ -130,25 +154,36 @@ app.get("/tasks", async (req, res) => {
 // - GET: get info for a specific task
 app.get("/tasks/:taskId", async (req, res) => {
   const taskId = req.params.taskId;
-  const data = await queryDb(`select * from tasks where id=${taskId};`);
+  const data = await queryDb("select * from tasks where id=$1;", [taskId]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - GET: get all tasks for a specific column
 app.get("/boards/:boardId/columns/:columnId/tasks", async (req, res) => {
   const columnId = req.params.columnId;
-  const data = await queryDb(
-    `select * from tasks where column_id=${columnId};`
-  );
+  const data = await queryDb("select * from tasks where column_id=$1;", [
+    columnId,
+  ]);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
 });
 // - POST: create new task
+app.post("/tasks", async (req, res) => {
+  const title = req.body.title;
+  const description = req.body.description;
+  const columnId = req.body.column_id;
+  const data = await queryDb(
+    "insert into tasks (title, description, column_id) values ($1, $2, $3) returning *;",
+    [title, description, columnId]
+  );
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send(JSON.stringify({ data }));
+});
 // - PUT & PATCH: edit existing task (change title, description, column_id, or parent_id)
 // - DELETE: delete task
 app.delete("/tasks/:taskId", async (req, res) => {
   const taskId = req.params.taskId;
-  const data = await queryDb(`delete from tasks where id=${taskId};`);
+  const data = await queryDb("delete from tasks where id=$1;", [taskId]);
   console.log(data);
   res.setHeader("Content-Type", "application/json");
   res.status(200).send(JSON.stringify(data));
